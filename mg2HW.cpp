@@ -16,7 +16,7 @@ for Standuino wwww.standuino.eu
 #include <avr/pgmspace.h>
 #include "mg2HW.h"
 
-unsigned char rowPin[NUMBER_OF_ROWS]={DIGIT_1_PIN,DIGIT_2_PIN,DIGIT_3_PIN,DIGIT_4_PIN,LED_PIN,LED_2_PIN};
+const unsigned char rowPin[NUMBER_OF_ROWS]={DIGIT_1_PIN,DIGIT_2_PIN,DIGIT_3_PIN,DIGIT_4_PIN,LED_PIN,LED_2_PIN};
 //const unsigned char row[5]={ ROW_1_PIN,ROW_2_PIN,ROW_3_PIN,ROW_4_PIN,ROW_5_PIN };
 const unsigned char rgbPin[3]={LED_R_PIN,LED_G_PIN,LED_B_PIN};
 

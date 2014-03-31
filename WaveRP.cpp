@@ -181,6 +181,7 @@ mcpDacSend(data);
 ISR(ADC_vect) {
   // read data
   sample = ADCH;
+//  unsigned char sampleL=ADCL;
   // clear timer campare B flag
   TIFR1 &= _BV(OCF1B);
   if (WaveRP::rpState != RP_STATE_RECORDING) {
@@ -217,6 +218,11 @@ ISR(ADC_vect) {
     }
   }
   rpBuffer[rpIndex++] = sample;
+  	//rpBuffer[rpIndex++] = sampleL; //16bit test
+	//rpBuffer[rpIndex++] = sample;
+
+
+
   if(WaveRP::audioThru) mcpDacSend(sample<<4);
   }
 }
@@ -522,7 +528,7 @@ bool WaveRP::record(SdBaseFile* file, uint16_t rate, uint8_t pin, uint8_t ref) {
   header->fmt.sampleRate = rate;
   header->fmt.bytesPerSecond = rate;
   header->fmt.blockAlign = 1;
-  header->fmt.bitsPerSample = 8;
+  header->fmt.bitsPerSample = 8; //16bit rec hack
   // data chunck
   strncpy_P(header->data.id, PSTR("data"), 4);
   header->data.size = file->fileSize() - sizeof(WaveHeader);
