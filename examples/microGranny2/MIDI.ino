@@ -179,7 +179,7 @@ void readMidi(){
       // read the incoming byte:
 
       unsigned char incomingByte = Serial.read();
-      Serial.write(incomingByte); // thru
+     // Serial.write(incomingByte); // thru
 
       switch (state){      
       case 0:
@@ -338,6 +338,7 @@ boolean handleRealTime(unsigned char _incomingByte){
 
 #define SUSTAIN_PEDAL_BYTE 64
 #define PRESET_BY_CC_BYTE 0
+#define BANK_BY_CC_BYTE 1
 #define RANDOMIZE_BYTE 127
 
 #define CONTROL_CHANGE_BITS 7
@@ -353,6 +354,7 @@ void proceedCC(unsigned char _number,unsigned char _value){
   }
 
   if(_number==PRESET_BY_CC_BYTE) loadPreset(currentBank,myMap(_value,128,NUMBER_OF_PRESETS));
+//if(_number==BANK_BY_CC_BYTE) loadPreset(myMap(_value,128,NUMBER_OF_BANKS),currentPreset);
 
   // else if(_number==RANDOMIZE_BYTE) randomize(activeSound);
 

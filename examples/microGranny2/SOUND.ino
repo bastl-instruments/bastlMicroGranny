@@ -1,7 +1,7 @@
 long loopLength;
 long  shiftSpeed;
-long startPosition;
-long endPosition;
+uint32_t startPosition;
+uint32_t endPosition;
 int startIndex,endIndex;
 boolean repeat;
 boolean shiftDir,sync;

@@ -1,4 +1,4 @@
-
+//#include <mozzi_rand.h>
 unsigned char searchIndex=1;
 void listNameUp(){
   name[1]++;

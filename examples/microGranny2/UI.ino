@@ -26,7 +26,7 @@ boolean tuned=true;
 
 //1101
 //TUNED, LEGATO, REPEAT, SYNC and RANDOM SHIFT
-long startGranule;
+uint32_t startGranule;
 
 
 
@@ -124,15 +124,16 @@ void playSound(unsigned char _sound){
 
 //samples per second*1000 - millisecond - how many samples?
 //x= sample Rate*number of samples / 1000
-long seekPosition;
+uint32_t seekPosition;
 void setEnd(unsigned char _sound){
   endIndex=getVar(_sound,END);
-  if(sync)  endIndex=pgm_read_word_near(usefulLengths+(endIndex>>6)+1);
+  if(sync)  endIndex=pgm_read_word_near(usefulLengths+(endIndex>>6)+1), seekPosition=startPosition;
   else{
     //ending=true;
     if(endIndex<1022){
       if(endIndex<startIndex) endIndex=startIndex+1;     
       endPosition=endIndex*startGranule;
+      seekPosition=startPosition;
     }
     else if(shiftSpeed<0 && loopLength!=0) endPosition=file.fileSize()-(sampleRateNow*loopLength)/500,seekPosition=endPosition;
     else endPosition=file.fileSize(),seekPosition=startPosition;
@@ -692,7 +693,10 @@ void demo(){
   currentBank=9;
   currentPreset=5;
   loadPreset(currentBank,currentPreset);
+  dimLeds();
+
   for(int i=0;i<30;i++){
+    hw.setLed(bigButton[5],true);
     unsigned char _note=rand(6);
     putNoteIn(_note);
     while(wave.isPlaying()){
@@ -703,9 +707,11 @@ void demo(){
     }
     putNoteOut(_note);
   } 
-  clearBuffer();
+  // clearBuffer();
+  chacha();
 
 }
+
 
 
 
