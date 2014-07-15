@@ -99,8 +99,8 @@ void error(char* str) {
   }
 }
 
-
-
+//#define COUNTER_THRESHOLD 255
+//int counter;
 // record a track
 unsigned char updt;
 
@@ -174,9 +174,11 @@ void trackRecord(unsigned char _sound,unsigned char _preset) {
   hw.dimForRecord(bigButton[_sound]);
 
   pinMode(6,INPUT_PULLUP);
-
-  while (wave.isRecording()) { //udělat něco jako delay
+//  counter=1;
+  while(!digitalRead(6));// counter++; //delay
+  while (wave.isRecording()) { //udělat něco jako delay   
     if(!digitalRead(6)) wave.stop(); //hw.justPressed(REC)) 
+    
   }
   wave.stop();
 
@@ -206,6 +208,7 @@ void chacha(){
   EEPROM.write(1002,currentPreset);
   EEPROM.write(1000,1),software_Reset(); 
 }
+
 
 
 

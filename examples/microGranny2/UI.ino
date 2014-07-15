@@ -158,7 +158,7 @@ void loadValuesFromMemmory(unsigned char _sound){
   wave.pause();
 
   if(notePitch!=255){
-    sampleRateNow=(pgm_read_word_near(noteSampleRateTable+notePitch));
+    sampleRateNow=(pgm_read_word_near(noteSampleRateTable+notePitch)); //+rnd number to lower probability of interference novinka
   }
   else{
     sampleRateNow=valueToSampleRate(getVar(_sound,RATE));
@@ -174,7 +174,7 @@ void loadValuesFromMemmory(unsigned char _sound){
   setEnd(_sound);
   wave.seek(seekPosition);
   wave.resume();
-
+//granularTime=millis();
 
 }
 int valueToSampleRate(int _value){
@@ -487,7 +487,7 @@ void renderHold(){
   hw.setLed(HOLD,hold); 
 }
 
-
+#define TOLERANCE 10
 void renderKnobs(){
   unsigned char _sound;
   //if(notesInBuffer>0) _sound=activeSound;
@@ -513,15 +513,19 @@ void renderKnobs(){
       setVar(_sound,_variable,_value); 
 
       if(variableDepth[_variable]>7){
-        if((was>>2)!=(_value>>2)) {
+        if((was>>2)!=(_value>>2)) { //minus větší než - ripple compensate // novinka
+          // if(abs(was-_value)>TOLERANCE) {
           lastMoved=i;
           whileShow=true;
           whileTime=millis();
-          if(_variable==START) loadValuesFromMemmory(sound); //snap to start
+
+         //
+        
+     //if(_variable==START) loadValuesFromMemmory(sound); //snap to start //novinka
         }
 
       }
-      else if((was>>1)!=(_value>>1)) {
+      else if((was>>1)!=(_value>>1)) { ////minus větší než - ripple compensate // novinka
         lastMoved=i;
         whileShow=true;
         whileTime=millis();
@@ -711,6 +715,7 @@ void demo(){
   chacha();
 
 }
+
 
 
 

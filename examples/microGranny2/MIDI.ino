@@ -140,9 +140,7 @@ void readMidiChannel(){
   channel=EEPROM.read(MIDI_CHANNEL);
   if(channel>16) EEPROM.write(MIDI_CHANNEL,0), channel=0;
 
-  showValue(channel+1);
-  hw.displayChar('C',0);
-  hw.displayChar('H',1); 
+
 
   hw.update();
   for(int i=0;i<6;i++){
@@ -153,7 +151,9 @@ void readMidiChannel(){
       else channel=i+6*hw.buttonState(FN),EEPROM.write(MIDI_CHANNEL,channel);
     }
   }
-
+  showValue(channel+1);
+  hw.displayChar('C',0);
+  hw.displayChar('H',1); 
   if(wave.isPlaying()){
     while(!wave.isPaused()) hw.update();
   }
@@ -179,7 +179,7 @@ void readMidi(){
       // read the incoming byte:
 
       unsigned char incomingByte = Serial.read();
-     // Serial.write(incomingByte); // thru
+      // Serial.write(incomingByte); // thru
 
       switch (state){      
       case 0:
@@ -354,7 +354,7 @@ void proceedCC(unsigned char _number,unsigned char _value){
   }
 
   if(_number==PRESET_BY_CC_BYTE) loadPreset(currentBank,myMap(_value,128,NUMBER_OF_PRESETS));
-//if(_number==BANK_BY_CC_BYTE) loadPreset(myMap(_value,128,NUMBER_OF_BANKS),currentPreset);
+  //if(_number==BANK_BY_CC_BYTE) loadPreset(myMap(_value,128,NUMBER_OF_BANKS),currentPreset);
 
   // else if(_number==RANDOMIZE_BYTE) randomize(activeSound);
 
@@ -375,4 +375,5 @@ void proceedPB(unsigned char _byte1,unsigned char _byte2){
  wave.setSampleRate(sampleRateNow+pitchBendNow);
  }
  */
+
 
