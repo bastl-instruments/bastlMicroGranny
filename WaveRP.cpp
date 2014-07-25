@@ -27,8 +27,11 @@
 #include <WaveStructs.h>
 #include <SdFatUtil.h>
 #include <mcpDac.h>
-#include <mg2HW.h>
+//#include <mg2HW.h>
 
+
+
+//extern mg2HW hw;
 // ISR static variables
 
 uint16_t const BUF_LENGTH = 512;  // must be 512, the SD block size
@@ -72,6 +75,7 @@ volatile uint16_t WaveRP::volOffset = 0;
 static void isrStop(void) {
   ADCSRA &= ~(1 << ADIE);  // disable ADC interrupt
   TIMSK1 &= ~_BV(OCIE1B);  // disable DAC timer interrupt
+ // mcpDacSend(0);
   WaveRP::rpState = RP_STATE_STOPPED;
 }
 //------------------------------------------------------------------------------
@@ -95,10 +99,16 @@ unsigned char fadeCount;
 #define FADE_LENGTH 32
 */
 uint8_t sample;
+
+uint8_t count=0;
+uint8_t divider=128;
+//boolean divide=false;
+
 ISR(TIMER1_COMPB_vect) {
 
   if (WaveRP::rpState != RP_STATE_PLAYING) {
     TIMSK1 &= ~_BV(OCIE1B);  // disable DAC timer interrupt
+   // mcpDacSend(0); //novinka
     return;
   }
   // pause has not been tested
@@ -119,6 +129,7 @@ ISR(TIMER1_COMPB_vect) {
       return;
     } else if (WaveRP::sdStatus == SD_STATUS_END_OF_DATA){
    		 WaveRP::rpPause = true;
+   		 
    		return;
     } else {
     //	WaveRP::rpPause = true;
@@ -127,17 +138,25 @@ ISR(TIMER1_COMPB_vect) {
     }
   }
   uint16_t data;
+  
+  count++;
+  if(count>=divider) count=0;//, hw.updateDisplay();//,divide=true;
+  //else divide=false;
+  
   if (WaveRP::bitsPerSample == 8) {
     // 8-bit is unsigned
     data = rpBuffer[rpIndex] << 4;
+    
+   // if(divide) 
     rpIndex++;
   } else {
     // 16-bit is signed - keep high 12 bits for DAC
     data = ((rpBuffer[rpIndex + 1] ^ 0X80) << 4) | (rpBuffer[rpIndex] >> 4);
-   rpIndex += 2;
+  //if(divide) 
+  rpIndex += 2;
   }
   data=data|WaveRP::_crush;
-#if DVOLUME
+#if DVOLUME // fast lennart
   if (WaveRP::volMult) {
     uint32_t tmp = WaveRP::volMult * (uint32_t)data;
     data = tmp >> 8;
@@ -226,6 +245,26 @@ ISR(ADC_vect) {
   if(WaveRP::audioThru) mcpDacSend(sample<<4);
   }
 }
+boolean readBlock(){
+sdByteCount = BUF_LENGTH;
+    uint32_t dataRemaining = WaveRP::sdEndPosition - WaveRP::sdCurPosition;
+    if (sdByteCount > dataRemaining) {
+      sdByteCount = dataRemaining;
+      if (sdByteCount == 0) {
+        WaveRP::sdStatus = SD_STATUS_END_OF_DATA;
+        return false;
+      }
+    }
+    
+uint32_t block = WaveRP::sdStartBlock + WaveRP::sdCurPosition/512;
+    WaveRP::sdCurPosition += sdByteCount;
+    if (!WaveRP::sdCard->readBlock(block, sdBuffer)) {
+      WaveRP::sdStatus = SD_STATUS_IO_ERROR;
+      return false;
+    }
+    return true;
+}    
+    
 //------------------------------------------------------------------------------
 // Interrupt for SD read/write
 ISR(TIMER1_COMPA_vect) {
@@ -249,6 +288,7 @@ ISR(TIMER1_COMPA_vect) {
       return;
     }
   } else if (WaveRP::rpState == RP_STATE_PLAYING) {
+  /*
     sdByteCount = BUF_LENGTH;
     uint32_t dataRemaining = WaveRP::sdEndPosition - WaveRP::sdCurPosition;
     if (sdByteCount > dataRemaining) {
@@ -258,12 +298,15 @@ ISR(TIMER1_COMPA_vect) {
         return;
       }
     }
+    
     uint32_t block = WaveRP::sdStartBlock + WaveRP::sdCurPosition/512;
     WaveRP::sdCurPosition += sdByteCount;
     if (!WaveRP::sdCard->readBlock(block, sdBuffer)) {
       WaveRP::sdStatus = SD_STATUS_IO_ERROR;
       return;
     }
+    */
+    if(!readBlock()) return;
   }
   cli();
   WaveRP::sdStatus = SD_STATUS_BUFFER_READY;
@@ -622,11 +665,19 @@ void WaveRP::seek(uint32_t pos) {
 //fadeFrom=data;
 //fadeCount=0;
 //fade=true;
+
   pos -= pos % BUF_LENGTH;
   // don't play metadata
-  if (pos < BUF_LENGTH) pos = BUF_LENGTH;
-  if (pos > sdEndPosition) pos = sdEndPosition;
-  if (isPlaying() && isPaused()) sdCurPosition = pos;
+  if (pos <= BUF_LENGTH) pos = BUF_LENGTH;
+  if (pos > sdEndPosition) pos = sdEndPosition; 
+  if (isPlaying() && isPaused()){
+ 	sdCurPosition = pos;
+    //if(pos == sdEndPosition) return;
+   //	readBlock(); ////novinka
+   }
+   
+  
+  
 }
 //------------------------------------------------------------------------------
 /** Set sample rate - only allow for player.
@@ -635,8 +686,15 @@ void WaveRP::seek(uint32_t pos) {
  * \param[in] samplerate New rate in samples/sec
  */
 void WaveRP::setSampleRate(uint32_t samplerate) { // try for recording
+//if(samplerate<7500) divider=3, samplerate=samplerate*3;
+/*
+if(samplerate<13000) divider=2,samplerate*=2;//samplerate*2; //novinka
+else divider=1;
+*/
   if (isPlaying()) {
-    while (TCNT1 != 0);
+  
+  //s  while (TCNT1 != 0); // GRANNYFUCKER !!!
     ICR1 = F_CPU / samplerate;
+    
   }
 }

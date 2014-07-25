@@ -16,6 +16,8 @@ for Standuino wwww.standuino.eu
 
 #include "Arduino.h"
 #include <avr/pgmspace.h>
+#include <shiftRegisterFast.h>
+#include <portManipulations.h>
 
 #define DEFAULT 0
 #define UNFREEZE_EXTERNALY 1
@@ -91,6 +93,9 @@ for Standuino wwww.standuino.eu
 #define KNOB_PIN_2 3
 #define KNOB_PIN_3 2
 #define KNOB_PIN_4 1
+
+
+
 //
 
 
@@ -266,6 +271,7 @@ Segments
  */
 
 
+	
 
 class mg2HW
 {
@@ -319,6 +325,8 @@ class mg2HW
 	void updateButtons();
 	void updateDisplay();
 	
+	int _row;
+unsigned char displayBuffer[NUMBER_OF_ROWS];
 
 
   private: 
@@ -334,8 +342,7 @@ class mg2HW
 	int knobValues[NUMBER_OF_KNOBS];
 	int lastKnobValues[NUMBER_OF_KNOBS];
 	
-	int _row;
-	unsigned char displayBuffer[NUMBER_OF_ROWS];
+	
 	
 	
 	

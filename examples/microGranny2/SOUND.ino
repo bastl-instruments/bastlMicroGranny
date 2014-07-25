@@ -9,7 +9,7 @@ boolean ending=true;
 //unsigned char row;
 boolean hold;
 unsigned char page;
-
+uint32_t seekPosition;
 long instantStart,instantEnd;
 
 unsigned char envelopePhase;
@@ -53,10 +53,10 @@ void updateSound(){
   }
 
 }
-
+#define POS_TOL 200
 int instantClockCounter;
 void renderLooping(){
-long _pos=wave.getCurPosition();
+  long _pos=wave.getCurPosition();
   if(instantLoop==2){
     if(sync){
       if((clockCounter % instantClockCounter)==0){
@@ -99,23 +99,25 @@ long _pos=wave.getCurPosition();
       }
       else{
         if(_pos<= startPosition ){
-          if(repeat) wave.pause(),loadValuesFromMemmory(sound), wave.pause(), lastPosition=endPosition,wave.seek(lastPosition),wave.resume();
+          if(repeat) wave.pause(),loadValuesFromMemmory(sound),lastPosition=endPosition;// wave.pause(), lastPosition=endPosition,wave.seek(lastPosition),wave.resume();
           else stopSound();
         }
       }
-/*
-      if(_pos>= lastPosition ){
-        lastPosition+=shiftSpeed;
 
-        wave.pause();
-        wave.seek(lastPosition);
-        wave.resume();
-      }
-*/
+      /*
+      if(_pos>= lastPosition ){
+       lastPosition+=shiftSpeed;
+       
+       wave.pause();
+       wave.seek(lastPosition);
+       wave.resume();
+       }
+       */
 
     }
     else{
-      if(_pos<=startPosition) loadValuesFromMemmory(sound);
+      // if(_pos<=startPosition) loadValuesFromMemmory(sound); // novinka
+
       if(sync){
         if(endIndex!=1000){
           if((clockCounter % endIndex)==0){
@@ -125,8 +127,10 @@ long _pos=wave.getCurPosition();
         }
       }
       else{
+        // if(abs(_pos-endPosition)>POS_TOL){ //novinka
         if(_pos>=endPosition){
-          if(repeat) wave.pause(),loadValuesFromMemmory(sound);
+          
+          if(repeat) wave.pause(),loadValuesFromMemmory(sound),lastPosition=seekPosition;//,wave.seek(lastPosition),wave.resume();
           else stopSound();
         }
       }
@@ -243,13 +247,15 @@ int rand( int minval,  int maxval)
  }
  */
 long granularTime;
+//#define COMPENSATION 70 //novinka
 void renderGranular(){
 
 
 
   if(loopLength!=0){
-    if(lastLL==0) lastPosition=wave.getCurPosition();
     long pos=wave.getCurPosition();
+    if(lastLL==0) lastPosition=pos;
+    
 
     if(sync){
 
@@ -279,15 +285,29 @@ void renderGranular(){
     }
 
     else{
-      if(millis()-granularTime>=loopLength){
+      if(millis()-granularTime>=(loopLength)){
+        //+COMPENSATION//  novinka - kompenzace
         granularTime=millis(); 
 
-        //if(pos-lastPosition>=loopLength){
         lastPosition+=shiftSpeed;
-        if(lastPosition<0){
+        if(lastPosition<0){ //novinka
           if(shiftSpeed<0) lastPosition=endPosition;
           else lastPosition=0;
         }
+
+        if(shiftSpeed>0){
+          if(lastPosition>=endPosition) lastPosition=startPosition; //novinka
+        }
+
+        else{
+         // if() lastPosition-=200;
+       //  if((endPosition-lastPosition)>200) lastPosition-=200;
+       //long where=endPosition-512;
+        //if(lastPosition>=(where)) lastPosition=where;
+          if(lastPosition<=startPosition) lastPosition=endPosition;
+          //if(abs(pos-lastPosition)>abs(
+        }
+
         wave.pause();
         wave.seek(lastPosition);
         wave.resume();
@@ -299,5 +319,7 @@ void renderGranular(){
   lastLL=loopLength;
 
 }
+
+
 
 

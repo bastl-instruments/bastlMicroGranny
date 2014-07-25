@@ -20,6 +20,10 @@
 #ifndef WaveRP_h
 #define WaveRP_h
 #include <SdFat.h>
+#include <portManipulations.h>
+
+#define PIN C,0
+
  /**
   * Use Software volume control if nonzero.  Uses multiply and shift to
   * decrease volume by 1 dB per step. See DAC ISR in WaveHC.cpp.
@@ -131,7 +135,7 @@ class WaveRP {
   bool play(SdBaseFile* file);
   bool record(SdBaseFile* file, uint16_t rate, uint8_t pin, uint8_t ref);
   /** Resume recorder or player. */
-  void resume(void) {rpPause = false;}
+  void resume(void) {rpPause = false;} //bit_clear(PIN);
   void stop(void);
   bool trim(SdBaseFile* file);
   void adcInit(uint16_t rate, uint8_t pin, uint8_t ref);
