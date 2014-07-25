@@ -14,6 +14,16 @@ for Standuino wwww.standuino.eu
 
 #include "Arduino.h"
 #include <avr/pgmspace.h>
+
+#define SHIFTREGISTER_SER  C,5
+#define SHIFTREGISTER_RCK  B,1
+#define SHIFTREGISTER_SRCK B,0
+  
+ #define BUT_PIN_BAM D,6
+ #define BUT_PIN_BAM_2 D,7
+  
+#include <shiftRegisterFast.h>
+//#include <portManipulations.h>
 #include "mg2HW.h"
 
 const unsigned char rowPin[NUMBER_OF_ROWS]={DIGIT_1_PIN,DIGIT_2_PIN,DIGIT_3_PIN,DIGIT_4_PIN,LED_PIN,LED_2_PIN};
@@ -51,7 +61,7 @@ prog_uchar colorBit[NUMBER_OF_COLORS] PROGMEM = {
 BLACK_BITS, RED_BITS,GREEN_BITS,BLUE_BITS,YELLOW_BITS,MAGENTA_BITS,CIAN_BITS,WHITE_BITS
 
 };
-
+enum BitOrder {LSB_FIRST,MSB_FIRST};
 PROGMEM prog_uchar typo[40]={
   B00111111, //0
   B00000110, //1
@@ -96,6 +106,7 @@ PROGMEM prog_uchar typo[40]={
 };
 
 
+
 mg2HW::mg2HW(){
 
 }
@@ -108,6 +119,7 @@ void mg2HW::initialize(){
 	pinMode(LATCH_PIN,OUTPUT);
 	pinMode(BUTTON_PIN,INPUT_PULLUP);
 	pinMode(BUTTON_2_PIN,INPUT_PULLUP);
+	//pinMode(A2,OUTPUT);
 
 }
 
@@ -287,15 +299,17 @@ updateButtons();
 }
 */
 void mg2HW::updateDisplay(){
+//inline void updateDisplay(){
   if(++_row >= NUMBER_OF_ROWS) _row=0;
   
 	
   
-  	digitalWrite(LATCH_PIN,LOW); 
-  	shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,1<<rowPin[_row]);
-    shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,~displayBuffer[_row]);//analogRead(4)>>_row);//);
-    
-    digitalWrite(LATCH_PIN,HIGH);
+  	//digitalWrite(LATCH_PIN,LOW); 
+  	shiftRegFast::write_8bit(1<<rowPin[_row]);
+  	
+  	shiftRegFast::write_8bit(~displayBuffer[_row]);
+  	shiftRegFast::enableOutput();
+   // digitalWrite(LATCH_PIN,HIGH);
   
 
 }
@@ -328,20 +342,25 @@ void mg2HW::updateButtons(){
 		unsigned char whichButton=1<<i;;
 		
 		
-	    digitalWrite(LATCH_PIN,LOW); 
+	   // digitalWrite(LATCH_PIN,LOW); 
+	    shiftRegFast::write_8bit(0);
+	    shiftRegFast::write_8bit(~whichButton);
+	    shiftRegFast::enableOutput();
+	   // shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,0);
+	    //shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,~whichButton);
 	    
-	    shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,0);
-	    shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,~whichButton);
 	    
-	    
-	    digitalWrite(LATCH_PIN,HIGH);
-    	delayMicroseconds(10);
+	   // digitalWrite(LATCH_PIN,HIGH);
+    	delayMicroseconds(5); //delete?
 		
 		//pinMode(pgm_read_word_near(buttonPins + i), INPUT_PULLUP);
-		bitWrite(buttonStateHash,i,!digitalRead(BUTTON_PIN));
-//		delayMicroseconds(10);
-//pinMode(BUTTON_2_PIN,INPUT_PULLUP);
-		bitWrite(buttonStateHash,i+8,!digitalRead(BUTTON_2_PIN));
+		
+		
+		//bitWrite(buttonStateHash,i,!digitalRead(BUTTON_PIN));//bit_read_in(BUT_PIN));
+		bitWrite(buttonStateHash,i,!bit_read_in(BUT_PIN_BAM));//bit_read_in(BUT_PIN)); 
+
+		//bitWrite(buttonStateHash,i+8,!digitalRead(BUTTON_2_PIN));//bit_read_in(BUT_PIN_2));
+		bitWrite(buttonStateHash,i+8,!bit_read_in(BUT_PIN_BAM_2));
 		
 		// and now update all the other hashes
 	 	bitWrite(justPressedHash,i,false); 
@@ -364,10 +383,13 @@ void mg2HW::updateButtons(){
 void mg2HW::dimForRecord(unsigned char _BUTTON){ 
 	unsigned char whichButton=1<<_BUTTON;
 	bitWrite(whichButton,REC,1);
-	digitalWrite(LATCH_PIN,LOW); 
-    shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,1<<rowPin[LED_ROW]);	    
-    shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,~whichButton);
-    digitalWrite(LATCH_PIN,HIGH);
+	//digitalWrite(LATCH_PIN,LOW); 
+    //shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,1<<rowPin[LED_ROW]);	    
+    //shiftOut(DATA_PIN,CLOCK_PIN,LSBFIRST,~whichButton);
+    shiftRegFast::write_8bit(1<<rowPin[LED_ROW]);
+    shiftRegFast::write_8bit(~whichButton);
+    shiftRegFast::enableOutput();
+   // digitalWrite(LATCH_PIN,HIGH);
 }
 
 //returns current state of a button
@@ -429,6 +451,8 @@ unsigned char mg2HW::soundFromButtons(){
 	}
 	return val;
 }
+
+
 
 /*
 #define CLEAR_TIMES 8
