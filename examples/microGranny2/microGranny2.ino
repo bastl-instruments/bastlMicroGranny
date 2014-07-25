@@ -104,19 +104,35 @@ void setup(void) {
   hw.initialize();
   initSdCardAndReport();
   //Serial.begin(9600);
-  
-  
- if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7);
- else EEPROM.write(1000,0),currentPreset=EEPROM.read(E_PRESET),currentBank=EEPROM.read(E_BANK);
+
+
+  if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7);
+  else EEPROM.write(1000,0),currentPreset=EEPROM.read(E_PRESET),currentBank=EEPROM.read(E_BANK);
   initMidi();
-   //Serial.begin(MIDI_BAUD);
+  //Serial.begin(MIDI_BAUD);
 
   initMem(); 
- //  clearMemmory();
+  //  clearMemmory();
   restoreAnalogRead();
- // hw.freezeAllKnobs();
+  // hw.freezeAllKnobs();
+ // timer2setup();
+}
+/*
+void timer2setup(){
+  TCCR2A =  (1<<WGM21);
+  TIMSK2 |= (1 << OCIE2A);
+  TCCR2B = B00000111;
+  OCR2A = (F_CPU / 1024) / 300;
+  TCNT2 = 0;
 }
 
+ISR(TIMER2_COMPA_vect){
+ 
+    //if(wave.matrixAvailable) 
+    hw.updateButtons();
+    hw.updateDisplay();
+}
+*/
 void restoreAnalogRead()
 {
   ADCSRA=135; // default ARDUINO B10000111
@@ -125,19 +141,20 @@ void restoreAnalogRead()
 
 void software_Reset() // Restarts program from beginning but does not reset the peripherals and registers
 {
-asm volatile ("  jmp 0");  
+  asm volatile ("  jmp 0");  
 } 
 
 void loop() {
-readMidi();//,hw.displayText("midi");
- // readMidi();
+  //readMidi();//,hw.displayText("midi");
+   readMidi();
   UI();
- // readMidi();
- // readMidi();
+  // readMidi();
+  // readMidi();
   updateSound();
- // readMidi();
- // readMidi();
+  // readMidi();
+  // readMidi();
 }
+
 
 
 

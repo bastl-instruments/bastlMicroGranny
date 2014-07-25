@@ -27,7 +27,7 @@ unsigned char setting;
 int attackInterval, releaseInterval;
 //long legatoPosition;
 PROGMEM prog_uint16_t noteSampleRateTable[49]={/*0-C*/
-  2772,2929,3103,3281,3500,3679,3910,4146,4392,4660,4924,5231,5528,5863,6221,6579,6960,7355,7784,8278,8786,9333,9847,10420,11023,11662,12402,13119,13898,14706,15606,16491,17550,18555,19677,20857,22050,23420,24807,26197,27815,29480,29480,29480,29480,29480,29480,29480,/*48-C*/29480};
+  2772,2929,3103,3281,3500,3679,3910,4146,4392,4660,4924,5231,5528,5863,6221,6579,6960,7355,7784,8278,8786,9333,9847,10420,11023,/*11*/ 11662,12402,13119,13898,14706,15606,16491,17550,18555,19677,20857, /*0*/22050,23420,24807,26197,27815,29480,29480,29480,29480,29480,29480,29480,/*48-C*/29480};
 
 
 void shiftBufferLeft(unsigned char from){
@@ -136,7 +136,7 @@ void readMidiChannel(){
   channelSide=EEPROM.read(SIDE_CHANNEL);
 
   sideNote=EEPROM.read(SIDE_NOTE);
-  sideDecay=EEPROM.read(SIDE_DECAY);
+  //sideDecay=EEPROM.read(SIDE_DECAY);
   channel=EEPROM.read(MIDI_CHANNEL);
   if(channel>16) EEPROM.write(MIDI_CHANNEL,0), channel=0;
 
@@ -145,8 +145,8 @@ void readMidiChannel(){
   hw.update();
   for(int i=0;i<6;i++){
     if(hw.buttonState(bigButton[i])){
-      if(hw.buttonState(UP) && hw.buttonState(DOWN)) sideDecay=i, EEPROM.write(SIDE_DECAY,sideDecay), showValue(sideDecay), hw.displayChar('S',0), hw.displayChar('D',1);
-      else if(hw.buttonState(UP)) channelSide=i+6*hw.buttonState(FN), EEPROM.write(SIDE_CHANNEL,channelSide), showValue(channelSide+1), hw.displayChar('S',0), hw.displayChar('C',1); 
+     // if(hw.buttonState(UP) && hw.buttonState(DOWN)) sideDecay=i, EEPROM.write(SIDE_DECAY,sideDecay), showValue(sideDecay), hw.displayChar('S',0), hw.displayChar('D',1);
+       if(hw.buttonState(UP)) channelSide=i+6*hw.buttonState(FN), EEPROM.write(SIDE_CHANNEL,channelSide), showValue(channelSide+1), hw.displayChar('S',0), hw.displayChar('C',1); 
       else if(hw.buttonState(DOWN)) sideNote=i+60*hw.buttonState(FN), EEPROM.write(SIDE_NOTE,sideNote), showValue(sideNote), hw.displayChar('S',0), hw.displayChar('N',1); 
       else channel=i+6*hw.buttonState(FN),EEPROM.write(MIDI_CHANNEL,channel);
     }
@@ -309,8 +309,9 @@ void readMidi(){
 
 void proceedSideChain(unsigned char _note){
   if(_note==sideNote){
-    if(sideDecay==0) startEnvelope(midiVelocity,attackInterval);
-    else startEnvelope(midiVelocity,sideDecay<<2);
+    startEnvelope(midiVelocity,attackInterval);
+    //if(sideDecay==0) startEnvelope(midiVelocity,attackInterval);
+    //else startEnvelope(midiVelocity,sideDecay<<2);
   }
 }
 boolean handleRealTime(unsigned char _incomingByte){
