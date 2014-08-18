@@ -285,27 +285,24 @@ void renderGranular(){
     }
 
     else{
+      //long timeNow=millis();
       if(millis()-granularTime>=(loopLength)){
         //+COMPENSATION//  novinka - kompenzace
         granularTime=millis(); 
 
         lastPosition+=shiftSpeed;
-        if(lastPosition<0){ //novinka
+        /*
+        if(lastPosition<startPosition){ //novinka
           if(shiftSpeed<0) lastPosition=endPosition;
-          else lastPosition=0;
+          else lastPosition=startPosition;
         }
-
-        if(shiftSpeed>0){
+*/
+        if(shiftSpeed>=0){
           if(lastPosition>=endPosition) lastPosition=startPosition; //novinka
         }
 
         else{
-         // if() lastPosition-=200;
-       //  if((endPosition-lastPosition)>200) lastPosition-=200;
-       //long where=endPosition-512;
-        //if(lastPosition>=(where)) lastPosition=where;
           if(lastPosition<=startPosition) lastPosition=endPosition;
-          //if(abs(pos-lastPosition)>abs(
         }
 
         wave.pause();

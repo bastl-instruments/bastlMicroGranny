@@ -167,7 +167,7 @@ void mg2HW::updateKnobs(){
    	if (abs(newValue - knobValues[i]) > KNOB_TOLERANCE) {
       bitWrite(knobChangedHash, i, true);
     }
-    lastKnobValues[i]=knobValues[i];
+   // lastKnobValues[i]=knobValues[i];
     knobValues[i] = newValue;
     //delay(10); ///
     updateDisplay();
@@ -222,6 +222,12 @@ int mg2HW::knobValue(unsigned char _KNOB){
 int mg2HW::lastKnobValue(unsigned char _KNOB){ 
 
 	return lastKnobValues[_KNOB];
+
+}
+
+void mg2HW::setLastKnobValue(unsigned char _KNOB,int _val){ 
+
+	lastKnobValues[_KNOB]=_val;
 
 }
 

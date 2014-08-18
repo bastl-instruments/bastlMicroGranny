@@ -5,7 +5,7 @@
 boolean whileShow;
 long whileTime;
 
-#define WHILE_DURATION 1400
+#define WHILE_DURATION 1600
 #define NUMBER_OFFSET 48
 #define BIG_LETTER_OFFSET 65
 #define SMALL_LETTER_OFFSET 97
@@ -48,9 +48,6 @@ void UI(){
     hw.updateButtons();
     hw.displayText("slct");
     renderRecordRoutine();
-
-    //   updt++;
-    // if(updt>1) updt=0, 
     hw.updateDisplay();
     //       hw.updateKnobs();
 
@@ -60,10 +57,10 @@ void UI(){
   else{
 
     //if(!wave.isPlaying()) 
-   
+
     hw.updateButtons();
-     hw.updateDisplay();
-    
+    hw.updateDisplay();
+
     hw.updateKnobs();
     renderCombo();
     renderHold();
@@ -83,7 +80,6 @@ void UI(){
         rec=true;  
         wave.adcInit(RECORD_RATE, MIC_ANALOG_PIN, ADC_REFERENCE);
       }
-
       renderBigButtons();
     }
     hw.setLed(REC,false);
@@ -172,7 +168,7 @@ void loadValuesFromMemmory(unsigned char _sound){
 
 
   wave.setSampleRate(sampleRateNow);//+pitchBendNow);
-//  bit_set(PIN);
+  //  bit_set(PIN);
   crush=getVar(_sound,CRUSH)<<1;
   wave.setCrush(crush);
   if(sync) loopLength=pgm_read_word_near(usefulLengths+(getVar(_sound,LOOP_LENGTH)>>3));
@@ -283,29 +279,39 @@ void renderTweaking(unsigned char _page){
 
 }
 void showValue(int _value){
-  hw.displayNumber(abs(_value));
 
+
+
+  // else  
+  boolean minus=false;
+  if(_value<0) minus=true;
+  _value=abs(_value);
+  
+  hw.displayNumber(_value);
   if(!(_value/100)) hw.lightNumber(VOID,1);
   if(!((_value%100)/10)){
     if(_value<100) hw.lightNumber(VOID,2);
+    /*
     if(_value<0){ 
-      hw.lightNumber(MINUS,2);
-    }
+     hw.lightNumber(MINUS,2);
+     }
+     */
   }
-  else  if(_value<0) {
-    if(_value<=-100) hw.lightNumber(MINUS,0);
-    else if(_value<=-10) hw.lightNumber(MINUS,1);
+  if(minus) {
+    if(_value>=100) hw.lightNumber(MINUS,0);
+    else if(_value>=10) hw.lightNumber(MINUS,1);
     else hw.lightNumber(MINUS,2);
   }
+
   if(_value>=1000) hw.lightNumber(1,0),hw.lightNumber(0,1);
 
 }
 void renderCombo(){
-
+boolean _page=hw.buttonState(PAGE);
   for(int i=0;i<NUMBER_OF_BIG_BUTTONS;i++){
-    if(hw.buttonState(PAGE) && hw.justPressed(bigButton[i])) combo=true,loadPreset(currentBank,i);
+    if(_page && hw.justPressed(bigButton[i])) combo=true,loadPreset(currentBank,i);
   }
-  if(hw.buttonState(PAGE) && hw.justPressed(UP)) combo=true,loadPreset(currentBank+1,currentPreset);//,showForWhile("pr  "),hw.setDot(1,true),hw.displayChar(presetName[2],3),hw.displayChar(presetName[1],2),clearIndexes();
+  if(_page && hw.justPressed(UP)) combo=true,loadPreset(currentBank+1,currentPreset);//,showForWhile("pr  "),hw.setDot(1,true),hw.displayChar(presetName[2],3),hw.displayChar(presetName[1],2),clearIndexes();
   if(hw.buttonState(PAGE) && hw.justPressed(DOWN)) combo=true,loadPreset(currentBank-1,currentPreset);//,showForWhile("pr  "),hw.setDot(1,true),hw.displayChar(presetName[2],3),hw.displayChar(presetName[1],2),clearIndexes();
   if(hw.buttonState(PAGE) && hw.justPressed(REC)){
     combo=true;
@@ -347,7 +353,7 @@ void renderCombo(){
         lastPosition=instantStart;
       }
     }
-    if(hw.justPressed(bigButton[5])) combo=true, demo();
+    if(hw.justPressed(bigButton[5])) combo=true, randomize(activeSound), loadValuesFromMemmory(activeSound);// demo();
 
   }
 
@@ -504,6 +510,44 @@ void renderHold(){
 
 #define TOLERANCE_2 1
 
+
+unsigned int mapComp(unsigned int _val,unsigned int lowT,unsigned int hiT,unsigned int midSet){ 
+
+  if(_val>hiT){
+    //_val=myMap(_val-hiT,1023-hiT,1023); //-hiT
+
+      //_val= (_val ) * (1023 - lowT) / (1023 ) + lowT;
+
+    //_val=map(_val,hiT,1023,midSet,1023);
+    //     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    //  _val= (((_val - hiT) * ((2*(1023 - midSet)) / (1023 - hiT)))/2)  + midSet; //    
+    // _val=myMap(_val,lowT,midSet)-85;
+
+    _val-=hiT;
+    _val=myMap(_val,1023-hiT,1023-midSet);
+    _val+=midSet;
+  }
+  else if(_val>lowT){
+    _val=midSet;
+  } 
+
+  else{
+    //_val=map(_val,0,lowT,0,midSet);
+    // _val= (_val ) * (out_max ) / (1023 ) ;
+    _val=myMap(_val,lowT,midSet);
+  }
+
+  return _val;
+}
+
+#define LOW_T_L 1
+#define HI_T_L 200
+#define MID_V_L 8
+
+#define LOW_T_S 400
+#define HI_T_S 600
+#define MID_V_S 512
+
 void renderKnobs(){
   unsigned char _sound;
   //if(notesInBuffer>0) _sound=activeSound;
@@ -513,20 +557,43 @@ void renderKnobs(){
   for(int i=0;i<NUMBER_OF_KNOBS;i++){
 
     unsigned char _variable=i+VARIABLES_PER_PAGE*page;
+    //32132
+
+    int _knobValue, _lastKnobValue;
+    //int _varNow=getVar(_sound,_variable);
+    int was=getVar(_sound,_variable);
+
+
+    _knobValue=hw.knobValue(i);
+    _lastKnobValue=hw.lastKnobValue(i);
+
+    if(_variable==LOOP_LENGTH)  _knobValue=mapComp(_knobValue,LOW_T_L,HI_T_L,MID_V_L);
+    else if(_variable==SHIFT_SPEED) {
+      _knobValue=mapComp(_knobValue,LOW_T_S,HI_T_S,MID_V_S);
+      // if(_knobValue==511) _knobValue=512; 
+    }
 
 
     if(hw.knobFreezed(i)) {
       hw.setLed(knobLed[i],false);
+      //int _was=was;
+      // if(_variable==LOOP_LENGTH) _lastKnobValue=mapComp(_lastKnobValue,LOW_T_L,HI_T_L,MID_V_L);
+      // else if(_variable==SHIFT_SPEED) _lastKnobValue=mapComp(_lastKnobValue,LOW_T_S,HI_T_S,MID_V_S);
 
-      if(inBetween( scale(hw.knobValue(i),KNOB_BITS,variableDepth[_variable]), scale(hw.lastKnobValue(i),KNOB_BITS,variableDepth[_variable]),getVar(_sound,_variable) ) ) hw.unfreezeKnob(i);//,showForWhile(knobLabel(page,i)),lastMoved==i; //external unfreez
-
+      if(inBetween( scale(_knobValue,KNOB_BITS,variableDepth[_variable]), scale(_lastKnobValue,KNOB_BITS,variableDepth[_variable]),was ) ) hw.unfreezeKnob(i);//,showForWhile(knobLabel(page,i)),lastMoved==i; //external unfreez
+      hw.setLastKnobValue(i,_knobValue);
     }
 
     else{    
       hw.setLed(knobLed[i],true);   
-      int _value=scale(hw.knobValue(i),KNOB_BITS,variableDepth[_variable]);
-      int was=getVar(_sound,_variable);
+      int _value=scale(_knobValue,KNOB_BITS,variableDepth[_variable]);
+      //_varNow;
+
       setVar(_sound,_variable,_value); 
+      // long _timeNow=millis();
+     
+        
+        
 
       if(variableDepth[_variable]>8){
         //if(((was>>2)!=(_value>>2))) { //minus větší než - ripple compensate // novinka
@@ -542,7 +609,7 @@ void renderKnobs(){
 
       }
       else if((was>>3)!=(_value>>3)) { ////minus větší než - ripple compensate // novinka
-      
+
         lastMoved=i;
         whileShow=true;
         whileTime=millis();
@@ -592,6 +659,7 @@ void renderKnobs(){
     }
 
   }
+
   // }
   /*
   else{
@@ -602,6 +670,8 @@ void renderKnobs(){
 
   if(notesInBuffer==0) for(int i=0;i<NUMBER_OF_KNOBS;i++) hw.setLed(knobLed[i],false);  
 }
+
+
 
 void renderDisplay(){
 
@@ -656,8 +726,9 @@ void blinkLed(unsigned char _LED,int interval){
 
 
 void randomize(unsigned char _sound){
-  for(int i=0;i<10;i++) setVar(_sound,i,rand(maxVal(i))); 
+  for(int i=0;i<8;i++) setVar(_sound,i,rand(maxVal(i))); 
   setVar(_sound,CRUSH,rand(20));
+  setVar(_sound,ATTACK,rand(20));
 }
 
 unsigned char copyMemory[NUMBER_OF_BYTES];
@@ -708,30 +779,34 @@ char* knobLabel(unsigned char _page,unsigned char _knob){
  
  }
  */
-
+/*
 void demo(){
-
-  currentBank=9;
-  currentPreset=5;
-  loadPreset(currentBank,currentPreset);
-  dimLeds();
-
-  for(int i=0;i<30;i++){
-    hw.setLed(bigButton[5],true);
-    unsigned char _note=rand(6);
-    putNoteIn(_note);
-    while(wave.isPlaying()){
-      hw.displayText("demo");
-      hw.update();
-      updateSound();
-      if(hw.buttonState(bigButton[5])) break;  
-    }
-    putNoteOut(_note);
-  } 
-  // clearBuffer();
-  chacha();
-
-}
+ 
+ currentBank=9;
+ currentPreset=5;
+ loadPreset(currentBank,currentPreset);
+ dimLeds();
+ 
+ for(int i=0;i<30;i++){
+ hw.setLed(bigButton[5],true);
+ unsigned char _note=rand(6);
+ putNoteIn(_note);
+ while(wave.isPlaying()){
+ hw.displayText("demo");
+ hw.update();
+ updateSound();
+ if(hw.buttonState(bigButton[5])) break;  
+ }
+ putNoteOut(_note);
+ } 
+ // clearBuffer();
+ chacha();
+ 
+ }
+ 
+ 
+ 
+ */
 
 
 

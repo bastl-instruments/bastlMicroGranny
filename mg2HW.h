@@ -302,6 +302,7 @@ class mg2HW
 	void unfreezeKnob(unsigned char _KNOB);
 	int knobValue(unsigned char _KNOB);
 	int lastKnobValue(unsigned char _KNOB);
+	void setLastKnobValue(unsigned char _KNOB,int _val);
 //	void setFreezeType(unsigned char _TYPE);
 	
 	

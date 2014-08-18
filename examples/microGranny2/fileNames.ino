@@ -1,5 +1,9 @@
 //#include <mozzi_rand.h>
 unsigned char searchIndex=1;
+
+void dt(){
+  hw.displayText("SRCH");
+}
 void listNameUp(){
   name[1]++;
   if(name[1]>=58 && name[1]<65) name[1]=65;
@@ -11,7 +15,8 @@ void listNameUp(){
   while(!file.open(&root, name, O_READ)){
     //    hw.updateM
     hw.updateDisplay();
-    hw.displayText("SRCH");
+//    hw.displayText("SRCH");
+    dt();
     name[1]+=searchIndex;
     searchIndex++;
     if(name[1]>=58 && name[1]<65) name[1]=65,searchIndex=1;
@@ -40,7 +45,8 @@ void listNameDown(){
 
   while(!file.open(&root, name, O_READ)){
     hw.updateDisplay();
-    hw.displayText("SRCH");
+    dt();
+   // hw.displayText("SRCH");
     name[1]-=searchIndex;
     searchIndex++;
     if(name[1]<48){
@@ -52,11 +58,11 @@ void listNameDown(){
   }
   file.close();
   indexed(activeSound,false);
-  
-    if(!playBegin(name,activeSound)) listNameDown();
-  
+
+  if(!playBegin(name,activeSound)) listNameDown();
+
   stopSound();
-searchIndex=1;
+  searchIndex=1;
 }
 
 void upWithFirstLetter(){
@@ -70,6 +76,7 @@ void downWithFirstLetter(){
   if(name[0]<48) name[0]=90,name[1]=90;
 
 }
+
 
 
 

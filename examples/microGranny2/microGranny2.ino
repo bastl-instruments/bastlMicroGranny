@@ -93,7 +93,7 @@ mg2HW hw;
 long seekTo;
 unsigned char crush;
 unsigned char volume;
-long lastPosition;
+uint32_t lastPosition;
 unsigned char currentPreset=0;
 unsigned char currentBank=0;
 #define E_BANK 1001
