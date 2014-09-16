@@ -134,7 +134,7 @@ void setEnd(unsigned char _sound){
       endPosition=endIndex*startGranule;
       seekPosition=startPosition;
     }
-    else if(shiftSpeed<0 && loopLength!=0) endPosition=file.fileSize()-(sampleRateNow*(loopLength+10)  )/500,seekPosition=endPosition;
+    else if(shiftSpeed<0 && loopLength!=0) endPosition=file.fileSize()-(sampleRateNow*(loopLength+10)  )/300,seekPosition=endPosition;
     else endPosition=file.fileSize(),seekPosition=startPosition;
     // else  
 
@@ -507,7 +507,7 @@ void renderHold(){
   hw.setLed(HOLD,hold); 
 }
 
-#define TOLERANCE 3
+#define TOLERANCE 1 // bylo 3 novinka
 
 #define TOLERANCE_2 1
 

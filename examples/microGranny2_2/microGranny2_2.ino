@@ -52,8 +52,7 @@
  * 
  */
  
-#define VERSION 3
- 
+#define VERSION 2 
  
 #include <SdFat.h>
 #include <WaveRP.h>

@@ -231,6 +231,7 @@ void recognizeStatus(unsigned char incomingByte){
 
 }
 void handleNote(unsigned char _number,unsigned char _value,unsigned char _channel){
+  _number--;
   if(_channel==inputChannel){
     if(_value==0) putNoteOut(_number);
     else putNoteIn(_number), midiVelocity=_value;
