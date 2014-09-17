@@ -85,7 +85,7 @@ uint8_t playBegin(char* name,unsigned char _sound) {
     file.close();
     return false;
   }
-  wave.pause(); //novinka
+  //wave.pause(); //novinka
   return true;
 }
 

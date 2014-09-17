@@ -161,7 +161,7 @@ void setEnd(unsigned char _sound){
       //  seekPosition=startPosition;
     }
     // else if(shiftSpeed<0 && loopLength!=0) endPosition=file.fileSize()-(sampleRateNow*(loopLength+10)  )/300,seekPosition=endPosition;
-    else endPosition=sizeOfFile-1000;
+    else endPosition=sizeOfFile-512;
     if(reverse) seekPosition=endPosition;//, lastPosition=endPosition;
     else seekPosition=startPosition;
     //  }

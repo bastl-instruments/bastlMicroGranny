@@ -254,7 +254,11 @@ void stopEnvelope(){
 void renderEnvelope(){
   switch(envelopePhase){
   case 0:
-    if(attackInt==0) envelopePhase=1, envelopeNow=0,wave.setVolume(envelopeNow);
+  
+    if(attackInt==0){
+     if(reverse) attackInt=1;
+     else envelopePhase=1, envelopeNow=0,wave.setVolume(envelopeNow);
+    }
     else if(millis()-envelopeTime>=attackInt){
       envelopeTime=millis();
       if(attackInt<30) envelopeNow-=3;
@@ -323,6 +327,7 @@ int rand( int minval,  int maxval)
  return (int) ((((xorshift96() & 0xFFFF) * (maxval-minval))>>16) + minval);
  }
  */
+
 
 
 
