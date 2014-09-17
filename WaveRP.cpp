@@ -132,8 +132,8 @@ ISR(TIMER1_COMPB_vect) {
    		 
    		return;
     } else {
-    //	WaveRP::rpPause = true;
-      isrStop();
+    	WaveRP::rpPause = true;
+    //  isrStop();
       return;
     }
   }
@@ -514,7 +514,7 @@ bool WaveRP::play(SdBaseFile* file) {
   busyError = 0;
   sdFile = file;
   // clear pasue
-  rpPause = false;
+  rpPause = true; //novinka
   // set ADC/DAC state
   rpState = RP_STATE_PLAYING;
   // setup timer
@@ -523,6 +523,7 @@ bool WaveRP::play(SdBaseFile* file) {
   mcpDacInit();
   // enable timer interrupt for DAC
   TIMSK1 |= _BV(OCIE1B);
+  //rpPause = true; //novinka
   return true;
 }
 //------------------------------------------------------------------------------
