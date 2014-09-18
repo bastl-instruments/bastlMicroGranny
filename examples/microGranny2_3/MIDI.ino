@@ -123,15 +123,19 @@ unsigned char putNoteOut(unsigned char note){
 
 void initMidi(){
   clearBuffer();
+  //Serial.begin(9600);
   readMidiChannel();
+  //Serial.end();
   Serial.begin(MIDI_BAUD);
 
 }
 #define SIDE_CHANNEL 1022
 #define SIDE_NOTE 1021
 #define SIDE_DECAY 1020
-
+unsigned char TOLERANCE=3;
+//#define TOLERANCE 3
 unsigned char controler, CCvalue;
+#define TOL_EE 1019
 void readMidiChannel(){
 
   sideChannel=EEPROM.read(SIDE_CHANNEL);
@@ -139,16 +143,33 @@ void readMidiChannel(){
   sideNote=EEPROM.read(SIDE_NOTE);
   //sideDecay=EEPROM.read(SIDE_DECAY);
   inputChannel=EEPROM.read(MIDI_CHANNEL);
-  if(inputChannel>16) EEPROM.write(MIDI_CHANNEL,0), inputChannel=0;
+  if(inputChannel>16) EEPROM.write(MIDI_CHANNEL,0), inputChannel=0;//,EEPROM.write(TOL_EE,0);
+  
+
+  //TOLERANCE=EEPROM.read(TOL_EE);
+  //  if(TOLERANCE>10) EEPROM.write(TOL_EE,0);
 
 
 
-  hw.update();
+
+  
+ 
+   hw.update();
+  if(hw.buttonState(PAGE)) EEPROM.write(TOL_EE,0);
+  if(hw.buttonState(REC)) EEPROM.write(TOL_EE,4);
+  if(hw.buttonState(HOLD)) EEPROM.write(TOL_EE,9);
+  TOLERANCE = 3 +  EEPROM.read(TOL_EE);
+  if(TOLERANCE!=12 && TOLERANCE!=7 && TOLERANCE!=3) TOLERANCE=3;
+  //Serial.print(TOLERANCE);
+ 
+  
+  
+  
   for(int i=0;i<6;i++){
     if(hw.buttonState(bigButton[i])){
-      // if(hw.buttonState(UP) && hw.buttonState(DOWN)) sideDecay=i, EEPROM.write(SIDE_DECAY,sideDecay), showValue(sideDecay), hw.displayChar('S',0), hw.displayChar('D',1);
-      if(hw.buttonState(UP)) sideChannel=i+6*hw.buttonState(FN), EEPROM.write(SIDE_CHANNEL,sideChannel), showValue(sideChannel+1), hw.displayChar('S',0), hw.displayChar('C',1); 
-      else if(hw.buttonState(DOWN)) sideNote=i+60*hw.buttonState(FN), EEPROM.write(SIDE_NOTE,sideNote), showValue(sideNote), hw.displayChar('S',0), hw.displayChar('N',1); 
+      
+      if(hw.buttonState(UP)) sideChannel=i+6*hw.buttonState(FN), EEPROM.write(SIDE_CHANNEL,sideChannel);//, showValue(sideChannel+1);//, hw.displayChar('C',1); 
+      else if(hw.buttonState(DOWN)) sideNote=i+60*hw.buttonState(FN), EEPROM.write(SIDE_NOTE,sideNote);//, showValue(sideNote), hw.displayChar('N',1); 
       else inputChannel=i+6*hw.buttonState(FN),EEPROM.write(MIDI_CHANNEL,inputChannel);
     }
   }
@@ -157,8 +178,8 @@ void readMidiChannel(){
   hw.displayChar('H',1); 
   //hw.setDot(3,true);
   hw.setDot(VERSION,true);
-  
-  
+
+
   if(wave.isPlaying()){
     while(!wave.isPaused()) hw.update();
   }
@@ -199,7 +220,7 @@ void handleByte(unsigned char incomingByte){
       else if(noteOnStatus || noteOffStatus) number=incomingByte;
       else firstByte=true;
 
-      
+
     }
     else{
       value=incomingByte;
@@ -279,7 +300,7 @@ boolean handleRealTime(unsigned char _incomingByte){
 
 void proceedCC(unsigned char _number,unsigned char _value){
 
-  if(_number==1 || number==106) ll=scale(_value,CONTROL_CHANGE_BITS,variableDepth[LOOP_LENGTH]),setVar(activeSound,LOOP_LENGTH,ll), hw.unfreezeAllKnobs(),renderTweaking(1),hw.freezeAllKnobs(); //modwheel
+  if(_number==1) setVar(activeSound,CRUSH,_value), hw.unfreezeAllKnobs(),renderTweaking(0),hw.freezeAllKnobs(); //modwheel
   //if(_number==123) clearBuffer(),sound=0, stopEnvelope(),instantLoop=0; // all notes off
   else if(_number==SUSTAIN_PEDAL_BYTE){ 
     sustain=_value>>6;
@@ -309,6 +330,8 @@ void proceedPB(unsigned char _byte1,unsigned char _byte2){
  wave.setSampleRate(sampleRateNow+pitchBendNow);
  }
  */
+
+
 
 
 

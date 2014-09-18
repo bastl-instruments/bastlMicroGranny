@@ -132,7 +132,7 @@ class WaveRP {
   /** Pause recorder or player. */
   void pause(void) {rpPause = true;}
   uint16_t getData();
-  bool play(SdBaseFile* file);
+  bool play(SdBaseFile* file); //,uint32_t _pos=0
   bool record(SdBaseFile* file, uint16_t rate, uint8_t pin, uint8_t ref);
   /** Resume recorder or player. */
   void resume(void) {rpPause = false;} //bit_clear(PIN);
@@ -142,6 +142,7 @@ class WaveRP {
   //----------------------------------------------------------------------------
   // untested functions
   void seek(uint32_t pos); 
+//  void rB();
   uint32_t getCurPosition(void){ return sdCurPosition; };
   void setSampleRate(uint32_t samplerate); 
  

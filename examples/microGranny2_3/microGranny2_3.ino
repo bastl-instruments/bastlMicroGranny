@@ -52,7 +52,7 @@
  * 
  */
  
-#define VERSION 2 
+#define VERSION 0
  
 #include <SdFat.h>
 #include <WaveRP.h>
@@ -104,15 +104,15 @@ unsigned char currentBank=0;
 void setup(void) {
 
   hw.initialize();
+  
   initSdCardAndReport();
   //Serial.begin(9600);
 
 
-  if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7);
+  if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7), wave.resume();
   else EEPROM.write(1000,0),currentPreset=EEPROM.read(E_PRESET),currentBank=EEPROM.read(E_BANK);
   initMidi();
- // Serial.end();
- // Serial.begin(9600);
+  
 
   initMem(); 
   //  clearMemmory();

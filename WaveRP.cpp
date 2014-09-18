@@ -420,7 +420,7 @@ static uint8_t waveSize(SdBaseFile* file, uint32_t* size) {
  *
  * \return true for success or false for failure.
  */
-bool WaveRP::play(SdBaseFile* file) {
+bool WaveRP::play(SdBaseFile* file) { //,uint32_t _pos
   sdCard = file->volume()->sdCard();
   if (!file->contiguousRange(&sdStartBlock, &sdEndBlock)) {
    // PgmPrintln("File is not contiguous");
@@ -489,8 +489,14 @@ bool WaveRP::play(SdBaseFile* file) {
     // if not "data" then skip it!
     if (!file->seekCur(data->size)) return false;
   }
+  
+  
   sdCurPosition = file->curPosition();
-
+  
+  
+  // don't play metadata
+  
+ 	
   rpBuffer = buf;
   // fill the buffers so SD blocks line up with buffer boundaries.
   rpByteCount = BUF_LENGTH - file->curPosition() % BUF_LENGTH;
@@ -500,18 +506,44 @@ bool WaveRP::play(SdBaseFile* file) {
   sdCurPosition += rpByteCount;
   sdBuffer = reinterpret_cast<uint8_t*>(file->volume()->cacheClear());
   if (sdCurPosition < sdEndPosition) {
+  
     sdByteCount = BUF_LENGTH;
+    
     maxCount = sdEndPosition - sdCurPosition;
     if (maxCount < sdByteCount) sdByteCount = maxCount;
+
     uint32_t block = sdStartBlock + sdCurPosition / 512;
     if (!sdCard->readBlock(block, sdBuffer)) return false;
     sdStatus = SD_STATUS_BUFFER_READY;
     sdCurPosition += sdByteCount;
+    
+    //sdStatus = SD_STATUS_BUFFER_READY; //
+    
   } else {
     sdByteCount = 0;
     sdStatus = SD_STATUS_END_OF_DATA;
   }
+  uint8_t clearTo=0;
+  if(bitsPerSample==8)clearTo=128;
+  for(int i=0;i<512;i++) rpBuffer[i]=clearTo, sdBuffer[i]=clearTo;
+  
+ // sdStatus = SD_STATUS_BUFFER_READY; 
   busyError = 0;
+  
+  
+  /*
+  _pos -= _pos % BUF_LENGTH;
+    if (_pos <= BUF_LENGTH) _pos = BUF_LENGTH;
+  if (_pos > sdEndPosition) _pos = sdEndPosition; 
+ 
+ sdCurPosition = _pos;
+  rB();
+  rB();
+  */
+     
+      
+      
+      
   sdFile = file;
   // clear pasue
   rpPause = true; //novinka
@@ -519,13 +551,31 @@ bool WaveRP::play(SdBaseFile* file) {
   rpState = RP_STATE_PLAYING;
   // setup timer
   setRate(sampleRate*Channels);
+//   seek(_pos);
+  // rpBuffer=0;
+  // sdBuffer=0;
+   
   // initialize DAC pins
   mcpDacInit();
   // enable timer interrupt for DAC
+  
   TIMSK1 |= _BV(OCIE1B);
   //rpPause = true; //novinka
   return true;
 }
+/*
+void WaveRP::rB(){
+readBlock();
+  	 uint8_t *tmp = rpBuffer;
+      rpBuffer = sdBuffer;
+      sdBuffer = tmp;
+      rpIndex = 0;
+      rpByteCount = sdByteCount;
+      WaveRP::sdStatus = SD_STATUS_BUFFER_BUSY;
+      // cause interrupt to start SD read
+      TIMSK1 |= _BV(OCIE1A);
+}
+*/
 //------------------------------------------------------------------------------
 /** record to a preallocated contiguous file
  *

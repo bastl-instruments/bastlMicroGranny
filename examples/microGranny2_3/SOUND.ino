@@ -9,7 +9,7 @@ boolean ending=true;
 //unsigned char row;
 boolean hold;
 unsigned char page;
-uint32_t seekPosition;
+
 uint32_t lastPosition;
 
 long instantStart,instantEnd;
@@ -48,21 +48,10 @@ void updateSound(){
       if(repeat){
 
         if(reverse) {
-          // lastPosition=endPosition;
-          // loadValuesFromMemmory(sound);
-          //setEnd(_sound);
-          // granularTime=millis();
-          //         playSound(midiBuffer[ZERO]);
           wave.stop();
           wave.play(&file);
           doGrainShift();
-          /*
-          Serial.print(sizeOfFile);
-           Serial.print("   ");
-           Serial.print(endPosition);
-           Serial.print("   ");
-           Serial.println(lastPosition);
-           */
+         
         }
         else loadValuesFromMemmory(sound);
       } 
@@ -77,9 +66,8 @@ void updateSound(){
         if(reverse) {
           wave.stop();
           wave.play(&file);
-
           doGrainShift();
-          // Serial.println("S");
+         
         }
         else playSound(midiBuffer[ZERO]); 
       }

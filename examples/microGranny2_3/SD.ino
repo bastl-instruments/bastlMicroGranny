@@ -8,6 +8,7 @@ boolean blinkState;
 unsigned char recSound;
 boolean thru;
 unsigned char indexedHash=0;
+uint32_t seekPosition;
 boolean indexed(unsigned char _sound){
   return bitRead(indexedHash,_sound);
 }
@@ -78,13 +79,24 @@ uint8_t playBegin(char* name,unsigned char _sound) {
    return false;
    }
    */
-
+/* novinka
   if (!wave.play(&file)) {
     //  PgmPrint("Can't play: ");
     // Serial.println(name);
     file.close();
     return false;
   }
+  */
+  
+ // loadValuesFromMemmory(activeSound);
+
+  if (!wave.play(&file)) { //,uint32_t _pos=0
+    //  PgmPrint("Can't play: ");
+    // Serial.println(name);
+    file.close();
+    return false;
+  }
+  
   //wave.pause(); //novinka
   return true;
 }
@@ -168,7 +180,7 @@ void trackRecord(unsigned char _sound,unsigned char _preset) {
   else recording=false,recSound=0,rec=false;
 
   if(!wave.record(&file, RECORD_RATE, MIC_ANALOG_PIN, ADC_REFERENCE)) {
-    hw.displayText("eror");
+   // hw.displayText("eror");
     file.remove();
     return;
   } 
