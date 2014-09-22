@@ -1,6 +1,6 @@
 // op qr st   uv wx yz
 unsigned char incomingByte,note;
-boolean ignore, comandOff,slave,cc; //,midiNoteOn  noteOn,
+boolean ignore, comandOff,slave=false,cc; //,midiNoteOn  noteOn,
 unsigned char state=0;
 int ll;
 
@@ -148,11 +148,6 @@ void readMidiChannel(){
 
   //TOLERANCE=EEPROM.read(TOL_EE);
   //  if(TOLERANCE>10) EEPROM.write(TOL_EE,0);
-
-
-
-
-  
  
    hw.update();
   if(hw.buttonState(PAGE)) EEPROM.write(TOL_EE,0);
@@ -278,6 +273,7 @@ boolean handleRealTime(unsigned char _incomingByte){
     else if(_incomingByte==0xFA ){ //start
       clockCounter=0;
       slave=true;
+      // setSetting(activeSound);
     }
     else if(_incomingByte==0xFC){ //stop
       clockCounter=0;

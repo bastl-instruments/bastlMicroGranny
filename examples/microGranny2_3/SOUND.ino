@@ -4,7 +4,7 @@ uint32_t startPosition;
 uint32_t endPosition;
 int startIndex,endIndex;
 boolean repeat;
-boolean shiftDir,sync;
+boolean shiftDir,sync=true;
 boolean ending=true;
 //unsigned char row;
 boolean hold;
@@ -50,6 +50,7 @@ void updateSound(){
         if(reverse) {
           wave.stop();
           wave.play(&file);
+        // wave.setSampleRate(sampleRateNow);
           doGrainShift();
          
         }
@@ -66,6 +67,7 @@ void updateSound(){
         if(reverse) {
           wave.stop();
           wave.play(&file);
+       //  wave.setSampleRate(sampleRateNow);
           doGrainShift();
          
         }

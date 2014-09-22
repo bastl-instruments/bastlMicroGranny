@@ -164,7 +164,7 @@ void trackRecord(unsigned char _sound,unsigned char _preset) {
     //}
     if(hw.justPressed(HOLD)) thru=!thru,wave.setAudioThru(thru);
     hw.setLed(HOLD,thru);
-    displayVolume();
+   // displayVolume();
     if(hw.justPressed(REC)){
       break;
     }

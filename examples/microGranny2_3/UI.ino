@@ -125,58 +125,40 @@ void playSound(unsigned char _sound){
 //samples per second*1000 - millisecond - how many samples?
 //x= sample Rate*number of samples / 1000
 
-
+boolean revMidi=false;
 void setEnd(unsigned char _sound){
-  endIndex=getVar(_sound,END);
+  endPosition=sizeOfFile;
+  if(revMidi) endIndex=startIndex+1, startIndex=0; //, startPosition=0;
+  else endIndex=getVar(_sound,END);
   if(sync)  endIndex=pgm_read_word_near(usefulLengths+(endIndex>>6)+1), seekPosition=startPosition;
   else{
-    //ending=true;
-    //uint32_t _size=file.fileSize();
 
-    // if(shiftSpeed<0 && ll!=0){
-    /*
-    if(reverse){
-     //   endPosition=_size-(sampleRateNow*(loopLength+10)  )/300,seekPosition=endPosition;
-     //if(file.
-     //  if(_size<)
-     //(_size/100);
-     // if(endIndex>1000)   endPosition=sizeOfFile-(sampleRateNow*(ll<<3) ) / 300;
-     // uint32_t comp =sizeOfFile-((sampleRateNow*loopLength)/300);
-     // int comp=900-ll;
-     //  if(endIndex>comp) endIndex=comp;
-     //  int comp=1000-(ll*3);
-     //  if(endIndex>comp) endIndex=comp;
-     endPosition=endIndex*startGranule;
-     // if(endPosition>comp) endPosition=comp;
-     
-     seekPosition=endPosition;
-     }
-     */
-
-    //if(0);
-    //else{
     if(endIndex<1000){
       if(endIndex<=startIndex) endIndex=startIndex+10;     
       endPosition=endIndex*startGranule;
-      //  seekPosition=startPosition;
+
     }
-    // else if(shiftSpeed<0 && loopLength!=0) endPosition=file.fileSize()-(sampleRateNow*(loopLength+10)  )/300,seekPosition=endPosition;
+
     else endPosition=sizeOfFile-512;
     if(reverse) seekPosition=endPosition;//, lastPosition=endPosition;
+
     else seekPosition=startPosition;
-    //  }
-    // else  
 
   }
-  // if(startIndex>endIndex
+
 }
 int pitch;
 
 void loadValuesFromMemmory(unsigned char _sound){
   unsigned char  notePitch=255;
-
+  revMidi=false;
   sizeOfFile=file.fileSize();
-  if(!tuned && _sound>=23 && _sound <=73) startIndex=_sound-23, _sound=activeSound, startGranule=sizeOfFile/60;
+  if(!tuned && _sound>=23 && _sound <=73){
+
+    startIndex=_sound-23, _sound=activeSound, startGranule=sizeOfFile/60;
+    if(reverse) revMidi=true;//,startIndex=0 ;
+
+  }
   else if(_sound>=23 && _sound<66) notePitch=_sound-23,_sound=activeSound,startGranule=sizeOfFile/1024, startIndex=getVar(_sound,START);
   else _sound=activeSound,startGranule=sizeOfFile/1024, startIndex=getVar(_sound,START);
   // endIndex=getVar(_sound,END);
@@ -211,8 +193,9 @@ void loadValuesFromMemmory(unsigned char _sound){
   else reverse=false;
   setEnd(_sound);
   granularTime=millis(); //novinka
+  // novinka last
   wave.seek(seekPosition);
-  lastPosition=seekPosition; // novinka last
+  lastPosition=seekPosition;
   wave.resume();
 
 
@@ -288,14 +271,16 @@ void renderTweaking(unsigned char _page){
         shiftSpeed=((long)getVar(_sound,SHIFT_SPEED)-128)<<SHIFT_SPEED_SHIFT;
       }
       if(!hw.knobFreezed(2)){ //splice here??
-        startIndex=getVar(_sound,START);
-        //if(startIndex>endIndex) startIndex=endIndex-3;//MINIMAL_LOOP; //novinka
-        startPosition=startIndex*startGranule;
+        if(!revMidi){
+          startIndex=getVar(_sound,START);
+          //if(startIndex>endIndex) startIndex=endIndex-3;//MINIMAL_LOOP; //novinka
+          startPosition=startIndex*startGranule;
+        }
         //setEnd(_sound); //novinka
 
       }
       //if(!hw.knobFreezed(3))  
-      setEnd(_sound);
+      if(!revMidi)   setEnd(_sound);
 
 
 
@@ -501,7 +486,7 @@ void renderRecordRoutine(){
     for(int i=0;i<NUMBER_OF_BIG_BUTTONS;i++) {
       if(hw.justPressed(bigButton[i])) recSound=i,trackRecord(recSound,currentPreset);
     }
-    displayVolume();
+    //   displayVolume();
   }
 }
 
@@ -534,7 +519,7 @@ void renderHold(){
   hw.setLed(HOLD,hold); 
 }
 
-#define TOLERANCE 3 // bylo 3 novinka
+// bylo 3 novinka
 
 #define TOLERANCE_2 1
 
@@ -623,7 +608,7 @@ void renderKnobs(){
 
 
 
-      if(variableDepth[_variable]>9){ //novink
+      if(variableDepth[_variable]>8){ //novink
         //if(((was>>2)!=(_value>>2))) { //minus větší než - ripple compensate // novinka
         if(abs(was-_value)>TOLERANCE) {
           lastMoved=i;
@@ -835,6 +820,8 @@ void demo(){
  
  
  */
+
+
 
 
 

@@ -52,7 +52,7 @@
  * 
  */
  
-#define VERSION 0
+#define VERSION 1
  
 #include <SdFat.h>
 #include <WaveRP.h>
@@ -108,8 +108,8 @@ void setup(void) {
   initSdCardAndReport();
   //Serial.begin(9600);
 
-
-  if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7), wave.resume();
+//
+  if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7),wave.setSampleRate(22050), wave.resume();
   else EEPROM.write(1000,0),currentPreset=EEPROM.read(E_PRESET),currentBank=EEPROM.read(E_BANK);
   initMidi();
   
@@ -148,14 +148,14 @@ void software_Reset() // Restarts program from beginning but does not reset the 
 } 
 
 void loop() {
-  //readMidi();//,hw.displayText("midi");
+  readMidi();//,hw.displayText("midi");
    readMidi();
   UI();
-  // readMidi();
-  // readMidi();
+   readMidi();
+   readMidi();
   updateSound();
-  // readMidi();
-  // readMidi();
+   readMidi();
+   readMidi();
 }
 
 
