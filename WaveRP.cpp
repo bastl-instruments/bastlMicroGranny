@@ -365,7 +365,9 @@ static void setRate(uint16_t rate) {
   // no clock div, CTC mode
   TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS10);
   // set TOP for timer reset
-  ICR1 = F_CPU/(uint32_t)rate;
+  
+  //ICR1 = F_CPU/(uint32_t)rate; //novinka
+  
   // compare for SD interrupt
   OCR1A =  10;
   // compare for DAC interrupt
@@ -601,6 +603,7 @@ bool WaveRP::record(SdBaseFile* file, uint16_t rate, uint8_t pin, uint8_t ref) {
   if (!sdCard->erase(sdStartBlock, sdEndBlock)) return false;
   // setup timer
   setRate(rate);
+  ICR1 = F_CPU/22050;
   sdBuffer = buf;
   sdStatus = SD_STATUS_BUFFER_READY;
   // use SdVolume's cache as second buffer to save RAM
