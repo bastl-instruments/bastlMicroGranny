@@ -1,4 +1,4 @@
-/* Arduino WaveRP Library
+	/* Arduino WaveRP Library
  * Copyright (C) 2009 by William Greiman
  *
  * This file is part of the Arduino WaveRP Library
@@ -117,8 +117,8 @@ inline void mcpDacInit(void) {
 //------------------------------------------------------------------------------
 // send 12 bits to dac
 // trusted compiler to optimize and it does
-// csLow to csHigh takes 8 - 9 usec on a 16 MHz Arduino
-static inline void mcpDacSend(uint16_t data) {
+// csLow to csHigh takes 8 - 9 usec on a 16 MHz Arduino //4096
+static inline void mcpDacSend(uint16_t data) { // B0001 0000
   mcpDacCsLow();
   // send DAC config bits
   mcpDacSdiLow();
