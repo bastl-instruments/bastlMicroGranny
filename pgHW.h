@@ -40,7 +40,7 @@ for Standuino wwww.standuino.eu
 
 //const unsigned char bigButton[NUMBER_OF_BIG_BUTTONS]={BIG_1,BIG_2,BIG_3,BIG_4,BIG_5,BIG_6};
 
-#define KNOB_TOLERANCE 8
+#define KNOB_TOLERANCE 15
 #define KNOB_FREEZE_DISTANCE 128
 
 #define NUMBER_OF_KNOBS 2
