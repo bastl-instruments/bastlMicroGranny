@@ -21,6 +21,7 @@
 #define WaveRP_h
 #include <SdFat.h>
 #include <portManipulations.h>
+#include <mcpDac.h>
 
 #define PIN C,0
 
@@ -147,6 +148,6 @@ class WaveRP {
   void setSampleRate(uint32_t samplerate); 
  
   void setCrush(uint16_t _CRUSH){ _crush=_CRUSH<<2;};
-  void setAudioThru(bool _THRU){ audioThru=_THRU;};
+  void setAudioThru(bool _THRU){ audioThru=_THRU,   mcpDacInit();};
 };
 #endif  // WaveRP_h

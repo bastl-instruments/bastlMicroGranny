@@ -43,10 +43,13 @@ static uint8_t buf[BUF_LENGTH];
 // ADC/DAC buffer
 static uint8_t *rpBuffer;
 static uint16_t rpIndex;
+
 static uint16_t rpByteCount;
 // SDbuffer
 static uint8_t *sdBuffer;
 static uint16_t sdByteCount;
+static bool skip=false;
+static bool hiS=false;
 //------------------------------------------------------------------------------
 // static ISR variables shared with WaveRP class
 volatile uint8_t WaveRP::adcMax;
@@ -119,7 +122,8 @@ ISR(TIMER1_COMPB_vect) {
       uint8_t *tmp = rpBuffer;
       rpBuffer = sdBuffer;
       sdBuffer = tmp;
-      rpIndex = 0;
+     if(skip) rpIndex = rpByteCount-2, skip=false;
+     else rpIndex=0;
       rpByteCount = sdByteCount;
       WaveRP::sdStatus = SD_STATUS_BUFFER_BUSY;
       // cause interrupt to start SD read
@@ -148,12 +152,14 @@ ISR(TIMER1_COMPB_vect) {
     data = rpBuffer[rpIndex] << 4;
     
    // if(divide) 
-    rpIndex++;
+   if(hiS) rpIndex += 2;
+    else rpIndex++;
   } else {
     // 16-bit is signed - keep high 12 bits for DAC
     data = ((rpBuffer[rpIndex + 1] ^ 0X80) << 4) | (rpBuffer[rpIndex] >> 4);
   //if(divide) 
-  rpIndex += 2;
+ 	if(hiS) rpIndex += 4;
+	 else rpIndex += 2;
   }
   data=data|WaveRP::_crush;
 #if DVOLUME // fast lennart
@@ -317,7 +323,7 @@ ISR(TIMER1_COMPA_vect) {
 // start ADC - should test results of prescaler algorithm.  Does it help?
 // The idea is to allow max time for ADC to minimize noise.
 void WaveRP::adcInit(uint16_t rate, uint8_t pin, uint8_t ref) {
-  // mcpDacInit();
+
   // Set ADC reference
   // Left adjust ADC result to allow easy 8 bit reading
   // Set low three bits of analog pin number
@@ -465,12 +471,16 @@ bool WaveRP::play(SdBaseFile* file) { //,uint32_t _pos
   //  PgmPrintln("Not mono/stereo!");
     return false;
   }
-  sampleRate = fmt->sampleRate;
+  //sampleRate = fmt->sampleRate; //novinka
   bitsPerSample = fmt->bitsPerSample;
   if (bitsPerSample > 16) {
  //   PgmPrintln("More than 16 bits per sample!");
-    return false;
+  //  return false; 
+  //novinka
+  //  return false; 
+  bitsPerSample=16;
   }
+  /* novinka
   uint8_t tooFast = sampleRate > 44100;  // flag
   if (sampleRate > 22050) {
     // ie 44khz
@@ -480,6 +490,7 @@ bool WaveRP::play(SdBaseFile* file) { //,uint32_t _pos
   //  PgmPrintln("Sample rate too high!");
     return false;
   }
+  */
   // find the data chunck
   while (1) {
     // read chunk ID
@@ -502,6 +513,7 @@ bool WaveRP::play(SdBaseFile* file) { //,uint32_t _pos
   rpBuffer = buf;
   // fill the buffers so SD blocks line up with buffer boundaries.
   rpByteCount = BUF_LENGTH - file->curPosition() % BUF_LENGTH;
+  
   uint32_t maxCount = sdEndPosition - sdCurPosition;
   if (rpByteCount > maxCount) rpByteCount = maxCount;
   if (file->read(rpBuffer, rpByteCount) != rpByteCount) return false;
@@ -525,11 +537,15 @@ bool WaveRP::play(SdBaseFile* file) { //,uint32_t _pos
     sdByteCount = 0;
     sdStatus = SD_STATUS_END_OF_DATA;
   }
+  
   uint8_t clearTo=0;
   if(bitsPerSample==8)clearTo=128;
-  for(int i=0;i<512;i++) rpBuffer[i]=clearTo, sdBuffer[i]=clearTo;
-  
- // sdStatus = SD_STATUS_BUFFER_READY; 
+  for(int i=0;i<512;i++)   sdBuffer[i]=clearTo,rpBuffer[i]=clearTo;// ,novinka sdByteCount=BUF_LENGTH
+//  sdByteCount=BUF_LENGTH;
+ // rpByteCount=BUF_LENGTH;
+  rpIndex=rpByteCount-2; // novinka sdByteCount=BUF_LENGTH
+  sdStatus = SD_STATUS_BUFFER_READY; 
+  skip=true;
   busyError = 0;
   
   
@@ -745,6 +761,9 @@ void WaveRP::setSampleRate(uint32_t samplerate) { // try for recording
 if(samplerate<13000) divider=2,samplerate*=2;//samplerate*2; //novinka
 else divider=1;
 */
+//if(samplerate>18050) samplerate=samplerate/2, hiS=true;
+//else hiS=false;
+sampleRate=samplerate;
   if (isPlaying()) {
   
   //s  while (TCNT1 != 0); // GRANNYFUCKER !!!

@@ -147,14 +147,15 @@ void mg2HW::setFreezeType(unsigned char _TYPE){
   
 void mg2HW::updateKnobs(){
 
-	knobChangedHash = 0;
-  for (int i = 0; i < NUMBER_OF_KNOBS; i++) {
+	//knobChangedHash = 0;
+  for (uint8_t i = 0; i < NUMBER_OF_KNOBS; i++) {
   	lastKnobValues[i]=knobValues[i];
   	
     int newValue = analogRead(pgm_read_word_near(knobPin + i));
+     
     int distance = abs(newValue - knobValues[i]); 
     
-    
+   /*
     if(!unfreezeExternaly){
     	if (bitRead(knobFreezedHash, i) == true) {
     	  if (distance > KNOB_FREEZE_DISTANCE) {
@@ -167,6 +168,7 @@ void mg2HW::updateKnobs(){
    	if (abs(newValue - knobValues[i]) > KNOB_TOLERANCE) {
       bitWrite(knobChangedHash, i, true);
     }
+    */
    // lastKnobValues[i]=knobValues[i];
     knobValues[i] = newValue;
     //delay(10); ///
@@ -180,21 +182,21 @@ void mg2HW::updateKnobs(){
 boolean mg2HW::knobFreezed(unsigned char _KNOB){ 
 	return bitRead(knobFreezedHash,_KNOB);
 }
-
+/*
 boolean mg2HW::knobMoved(unsigned char _KNOB){ 
 	return bitRead(knobChangedHash,_KNOB);
 }
-
+*/
 // freeze all knobs
 void mg2HW::freezeAllKnobs(){ 
-	for(int i=0;i<NUMBER_OF_KNOBS;i++){
+	for(uint8_t i=0;i<NUMBER_OF_KNOBS;i++){
 		bitWrite(knobFreezedHash,i,true);
 	}
 }
 
 // unfreeze all knobs
 void mg2HW::unfreezeAllKnobs(){ 
-	for(int i=0;i<NUMBER_OF_KNOBS;i++){
+	for(uint8_t i=0;i<NUMBER_OF_KNOBS;i++){
 		bitWrite(knobFreezedHash,i,false);
 	}
 }
@@ -250,14 +252,14 @@ void mg2HW::setColor(unsigned char _COLOR){
 
 	unsigned char _bits=pgm_read_word_near(colorBit + _COLOR)	;
 	
-	for(int i=0;i<3;i++){
+	for(uint8_t i=0;i<3;i++){
 		setLed(rgbPin[i],bitRead(_bits,i));
 	}
 
 }
 
 void mg2HW::displayText(char *text){
-  for(int i=0;i<NUMBER_OF_DIGITS;i++) displayChar(text[i],i);
+  for(uint8_t i=0;i<NUMBER_OF_DIGITS;i++) displayChar(text[i],i);
 }
 
 void mg2HW::displayChar(char whichChar,unsigned char _digit) {
@@ -280,7 +282,7 @@ void mg2HW::displayChar(char whichChar,unsigned char _digit) {
 
 void mg2HW::lightNumber(int numberToDisplay, unsigned char _digit) {
 
-  for(int i=0;i<7;i++){
+  for(uint8_t i=0;i<7;i++){
     bitWrite(displayBuffer[_digit],segments[i],bitRead(pgm_read_word_near(typo+numberToDisplay),i)); 
   }
 
@@ -343,7 +345,7 @@ void mg2HW::updateButtons(){
 //	justReleasedHash=0;
 //    justPressedHash=0;
     
-	for(int i=0;i<8;i++){ // first read the buttons and update button states
+	for(uint8_t i=0;i<8;i++){ // first read the buttons and update button states
 	
 		unsigned char whichButton=1<<i;;
 		
@@ -434,7 +436,7 @@ boolean mg2HW::switchState(unsigned char _SWITCH){
 
 //resetsSwitches
 void mg2HW::resetSwitches(){
-	for(int i=0;i<NUMBER_OF_BUTTONS;i++){
+	for(uint8_t i=0;i<NUMBER_OF_BUTTONS;i++){
 		bitWrite(switchStateHash,i,false);
 	}
 }
@@ -442,7 +444,7 @@ void mg2HW::resetSwitches(){
 //use switch states as bits of one number - sound
 unsigned char mg2HW::soundFromSwitches(){
 	unsigned char val=0;
-	for(int i=0;i<4;i++){
+	for(uint8_t i=0;i<4;i++){
 		bitWrite(val,i,bitRead(switchStateHash,i));
 	}
 	return val;
@@ -452,7 +454,7 @@ unsigned char mg2HW::soundFromSwitches(){
 //use button states as bits of one number - sound
 unsigned char mg2HW::soundFromButtons(){
 	unsigned char val=0;
-	for(int i=0;i<4;i++){
+	for(uint8_t i=0;i<4;i++){
 		bitWrite(val,i,bitRead(buttonStateHash,i));
 	}
 	return val;

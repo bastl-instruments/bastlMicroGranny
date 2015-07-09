@@ -177,7 +177,7 @@ const unsigned char bigButton[NUMBER_OF_BIG_BUTTONS]={BIG_1,BIG_2,BIG_3,BIG_4,BI
 
 
 
-#define KNOB_TOLERANCE 3
+#define KNOB_TOLERANCE 20
 #define KNOB_FREEZE_DISTANCE 128
 
 #define NUMBER_OF_KNOBS 4
@@ -294,7 +294,7 @@ class mg2HW
 	boolean justReleased(unsigned char _BUTTON);
 	
 	boolean knobFreezed(unsigned char _KNOB);
-	boolean knobMoved(unsigned char _KNOB);
+//	boolean knobMoved(unsigned char _KNOB);
 	
 	void freezeAllKnobs();
 	void unfreezeAllKnobs();
@@ -339,7 +339,7 @@ unsigned char displayBuffer[NUMBER_OF_ROWS];
 	int justReleasedHash;
 	int ledStateHash;
 	unsigned char knobFreezedHash;
-	unsigned char knobChangedHash;
+	
 	int knobValues[NUMBER_OF_KNOBS];
 	int lastKnobValues[NUMBER_OF_KNOBS];
 	

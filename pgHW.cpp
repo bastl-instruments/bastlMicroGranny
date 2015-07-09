@@ -38,8 +38,8 @@ for Standuino wwww.standuino.eu
  #define BUT_PIN_BAM_2 C,2
  #define BUT_PIN_BAM_3 D,1
  #define BUT_PIN_BAM_4 C,1
-  #define BUT_PIN_BAM_5 B,0
-   #define BUT_PIN_BAM_6 B,1
+#define BUT_PIN_BAM_5 B,0
+ #define BUT_PIN_BAM_6 B,1
    
    #define KNOB_PIN_1 3
 #define KNOB_PIN_2 4
@@ -165,12 +165,20 @@ void pgHW::initialize(){
 	pinMode(DATA_PIN,OUTPUT);
 	pinMode(CLOCK_PIN,OUTPUT);
 	pinMode(LATCH_PIN,OUTPUT);
-	pinMode(BUTTON_1_PIN,INPUT_PULLUP);
-	pinMode(BUTTON_2_PIN,INPUT_PULLUP);
-	pinMode(BUTTON_3_PIN,INPUT_PULLUP);
-	pinMode(BUTTON_4_PIN,INPUT_PULLUP);
-	pinMode(BUTTON_5_PIN,INPUT_PULLUP);
-	pinMode(BUTTON_6_PIN,INPUT_PULLUP);
+	
+bit_dir_inp(BUT_PIN_BAM);
+	bit_dir_inp(BUT_PIN_BAM_2);
+//	bit_dir_inp(BUT_PIN_BAM_3);
+	bit_dir_inp(BUT_PIN_BAM_4);
+	bit_dir_inp(BUT_PIN_BAM_5);
+	bit_dir_inp(BUT_PIN_BAM_6);
+	
+	bit_set(BUT_PIN_BAM);
+	bit_set(BUT_PIN_BAM_2);
+//	bit_set(BUT_PIN_BAM_3);
+	bit_set(BUT_PIN_BAM_4);
+	bit_set(BUT_PIN_BAM_5);
+	bit_set(BUT_PIN_BAM_6);
 	//pinMode(A2,OUTPUT);
 
 }
@@ -375,30 +383,39 @@ if(displayBuffer[0]!=lastDisplayBuffer[0] || displayBuffer[1]!=lastDisplayBuffer
 
 // updates all button related hashes
 void pgHW::updateButtons(){  
-
+		
+	
+	/*
 	pinMode(BUTTON_1_PIN,INPUT_PULLUP);
 	pinMode(BUTTON_2_PIN,INPUT_PULLUP);
 	pinMode(BUTTON_3_PIN,INPUT_PULLUP);
 	pinMode(BUTTON_4_PIN,INPUT_PULLUP);
 	pinMode(BUTTON_5_PIN,INPUT_PULLUP);
 	pinMode(BUTTON_6_PIN,INPUT_PULLUP);
-
+	*/
+	
+	
 	bitWrite(buttonStateHash,0,!bit_read_in(BUT_PIN_BAM));//bit_read_in(BUT_PIN)); 
 	bitWrite(buttonStateHash,1,!bit_read_in(BUT_PIN_BAM_2));
+	
+	bit_dir_inp(BUT_PIN_BAM_3);
+	bit_set(BUT_PIN_BAM_3);
 	bitWrite(buttonStateHash,2,!bit_read_in(BUT_PIN_BAM_3));
+	//bit_clear(BUT_PIN_BAM_3);
+	//bit_dir_outp(BUT_PIN_BAM_3);
 	bitWrite(buttonStateHash,3,!bit_read_in(BUT_PIN_BAM_4));
-	bitWrite(buttonStateHash,4,!bit_read_in(BUT_PIN_BAM_5));
-	bitWrite(buttonStateHash,5,!bit_read_in(BUT_PIN_BAM_6));
+	bitWrite(buttonStateHash,4,bit_read_in(BUT_PIN_BAM_5));
+	bitWrite(buttonStateHash,5,bit_read_in(BUT_PIN_BAM_6));
 		
 //	justReleasedHash=0;
 //    justPressedHash=0;
     
-	for(int i=0;i<6;i++){ // first read the buttons and update button states
-	bitWrite(justPressedHash,i,false); 
-	bitWrite(justReleasedHash,i,false);
-	if(bitRead(buttonStateHash,i)==true && bitRead(lastButtonStateHash,i)==false)  bitWrite(justPressedHash,i,true);
-	if(bitRead(buttonStateHash,i)==false && bitRead(lastButtonStateHash,i)==true)  bitWrite(justReleasedHash,i,true);
-	bitWrite(lastButtonStateHash,i,bitRead(buttonStateHash,i));  
+	for(uint8_t i=0;i<6;i++){ // first read the buttons and update button states
+		bitWrite(justPressedHash,i,false); 
+		bitWrite(justReleasedHash,i,false);
+		if(bitRead(buttonStateHash,i)==true && bitRead(lastButtonStateHash,i)==false)  bitWrite(justPressedHash,i,true);
+		if(bitRead(buttonStateHash,i)==false && bitRead(lastButtonStateHash,i)==true)  bitWrite(justReleasedHash,i,true);
+		bitWrite(lastButtonStateHash,i,bitRead(buttonStateHash,i));  
 	}
 		
 		
