@@ -156,7 +156,7 @@ unsigned char lastDisplayBuffer[2];
 
 
   private: 
-  	
+  	uint8_t _knob;
 	int buttonStateHash;
 	int lastButtonStateHash;
 	int switchStateHash;

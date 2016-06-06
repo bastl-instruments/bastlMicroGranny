@@ -17,7 +17,8 @@ for Standuino wwww.standuino.eu
 #include <shiftRegisterFast.h>
 //#include <portManipulations.h>
 #include "pgHW.h"
-
+//#include <avr/pgmspace.h>
+#include <fastAnalogRead.h>
 
 #define SHIFTREGISTER_SER  D,5
 #define SHIFTREGISTER_RCK  D,6
@@ -54,6 +55,7 @@ for Standuino wwww.standuino.eu
 const unsigned char rgbPin[3]={LED_R_PIN,LED_G_PIN,LED_B_PIN};
 
 PROGMEM prog_char KnobPin[3]={KNOB_PIN_1,KNOB_PIN_2, CV_PIN};
+//const uint8_t KnobPin[3]={KNOB_PIN_1,KNOB_PIN_2, CV_PIN};
 
 
 /*
@@ -166,7 +168,7 @@ void pgHW::initialize(){
 	pinMode(CLOCK_PIN,OUTPUT);
 	pinMode(LATCH_PIN,OUTPUT);
 	
-bit_dir_inp(BUT_PIN_BAM);
+	bit_dir_inp(BUT_PIN_BAM);
 	bit_dir_inp(BUT_PIN_BAM_2);
 //	bit_dir_inp(BUT_PIN_BAM_3);
 	bit_dir_inp(BUT_PIN_BAM_4);
@@ -180,7 +182,12 @@ bit_dir_inp(BUT_PIN_BAM);
 	bit_set(BUT_PIN_BAM_5);
 	bit_set(BUT_PIN_BAM_6);
 	//pinMode(A2,OUTPUT);
-
+	/*
+	fastAnalogRead::init(); // for analog read
+	_knob=0;
+	fastAnalogRead::connectChannel(KnobPin[_knob]);//pgm_read_word_near(KnobPin + _knob));
+	fastAnalogRead::startConversion();
+*/
 }
 
 void pgHW::update(){
@@ -206,8 +213,50 @@ void pgHW::setFreezeType(unsigned char _TYPE){
   
   
 void pgHW::updateKnobs(){
-
+/*
 	knobChangedHash = 0;
+		while(!fastAnalogRead::isConversionFinished()){
+			lastKnobValues[_knob]=knobValues[_knob];
+			int newValue = fastAnalogRead::getConversionResult();
+		//	int distance = abs(newValue - knobValues[_knob]); 
+//			Serial.print
+			
+			if (abs(newValue - knobValues[_knob]) > KNOB_TOLERANCE) {
+    		  bitWrite(knobChangedHash, _knob, true);
+    		}
+  		  else bitWrite(knobChangedHash, _knob, false);
+   // lastKnobValues[i]=knobValues[i];
+   			knobValues[_knob] = newValue;
+    //delay(10); ///
+    
+    	//	updateDisplay();
+    		if(_knob<2) _knob++;
+			else _knob=0;
+			fastAnalogRead::connectChannel(KnobPin[_knob]);//pgm_read_word_near(KnobPin + _knob));
+			fastAnalogRead::startConversion();
+		}
+	*/	
+	if(_knob<2) _knob++;
+	else _knob=0;
+	knobChangedHash = 0;
+  
+  	lastKnobValues[_knob]=knobValues[_knob];
+  	
+    int newValue = analogRead(pgm_read_word_near(KnobPin + _knob));
+    int distance = abs(newValue - knobValues[_knob]); 
+    
+    
+   	if (abs(newValue - knobValues[_knob]) > KNOB_TOLERANCE) {
+      bitWrite(knobChangedHash, _knob, true);
+    }
+    else bitWrite(knobChangedHash, _knob, false);
+   // lastKnobValues[i]=knobValues[i];
+    knobValues[_knob] = newValue;
+    //delay(10); ///
+   // updateDisplay();
+  
+  /*
+  knobChangedHash = 0;
   for (int i = 0; i < 3; i++) {
   	lastKnobValues[i]=knobValues[i];
   	
@@ -222,9 +271,9 @@ void pgHW::updateKnobs(){
    // lastKnobValues[i]=knobValues[i];
     knobValues[i] = newValue;
     //delay(10); ///
-    updateDisplay();
+   // updateDisplay();
   }
-  
+  */
 }
 
 
@@ -239,14 +288,14 @@ boolean pgHW::knobMoved(unsigned char _KNOB){
 
 // freeze all knobs
 void pgHW::freezeAllKnobs(){ 
-	for(int i=0;i<NUMBER_OF_KNOBS;i++){
+	for(uint8_t i=0;i<NUMBER_OF_KNOBS;i++){
 		bitWrite(knobFreezedHash,i,true);
 	}
 }
 
 // unfreeze all knobs
 void pgHW::unfreezeAllKnobs(){ 
-	for(int i=0;i<NUMBER_OF_KNOBS;i++){
+	for(uint8_t i=0;i<NUMBER_OF_KNOBS;i++){
 		bitWrite(knobFreezedHash,i,false);
 	}
 }
@@ -306,14 +355,14 @@ void pgHW::setColor(unsigned char _COLOR){
 
 	unsigned char _bits=pgm_read_word_near(ColorBit + _COLOR)	;
 	
-	for(int i=0;i<3;i++){
+	for(uint8_t i=0;i<3;i++){
 		setLed(rgbPin[i],bitRead(_bits,i));
 	}
 
 }
 
 void pgHW::displayText(char *text){
- // for(int i=0;i<NUMBER_OF_DIGITS;i++) displayChar(text[i],i);
+ // 	int i=0;i<NUMBER_OF_DIGITS;i++) displayChar(text[i],i);
 }
 
 void pgHW::displayChar(char whichChar) {
@@ -336,7 +385,7 @@ void pgHW::displayChar(char whichChar) {
 
 void pgHW::lightNumber(int numberToDisplay) {
 
-  for(int i=0;i<7;i++){
+  for(uint8_t i=0;i<7;i++){
     bitWrite(displayBuffer[DISPLAY],segments[i],bitRead(pgm_read_word_near(Typo+numberToDisplay),i)); 
   }
 
@@ -461,7 +510,7 @@ boolean pgHW::switchState(unsigned char _SWITCH){
 
 //resetsSwitches
 void pgHW::resetSwitches(){
-	for(int i=0;i<NUMBER_OF_BUTTONS;i++){
+	for(uint8_t i=0;i<NUMBER_OF_BUTTONS;i++){
 		bitWrite(switchStateHash,i,false);
 	}
 }
@@ -469,7 +518,7 @@ void pgHW::resetSwitches(){
 //use switch states as bits of one number - sound
 unsigned char pgHW::soundFromSwitches(){
 	unsigned char val=0;
-	for(int i=0;i<4;i++){
+	for(uint8_t i=0;i<4;i++){
 		bitWrite(val,i,bitRead(switchStateHash,i));
 	}
 	return val;
@@ -479,7 +528,7 @@ unsigned char pgHW::soundFromSwitches(){
 //use button states as bits of one number - sound
 unsigned char pgHW::soundFromButtons(){
 	unsigned char val=0;
-	for(int i=0;i<4;i++){
+	for(uint8_t i=0;i<4;i++){
 		bitWrite(val,i,bitRead(buttonStateHash,i));
 	}
 	return val;
